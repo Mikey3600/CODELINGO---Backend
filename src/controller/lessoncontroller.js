@@ -1,58 +1,89 @@
+import lessonService from '../services/lessonservice.js'; 
+export const getAllCoursesAndLessonsController = async (req, res, next) => {
+    try {
+        
+        const courses = await lessonService.getAllCourses();
 
-import {
-  createLesson,
-  getLessonById,
-  getAllLessons,
-  updateLesson,
-  deleteLesson,
-} from '../models/lessonMOdel.js';
+       
+        const courseData = await Promise.all(
+            courses.map(async (course) => {
+                const lessons = await lessonService.getLessonsByCourse(course.id);
+                return {
+                    ...course,
+                    lessons: lessons,
+                };
+            })
+        );
 
-export const createLessonController = async (req, res) => {
-  try {
-    const lessonData = req.body;
-    const newLesson = await createLesson(lessonData);
-    res.status(201).json(newLesson);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        res.json(courseData);
+    } catch (error) {
+       
+        next(error);
+    }
 };
 
-export const getAllLessonsController = async (req, res) => {
-  try {
-    const lessons = await getAllLessons();
-    res.json(lessons);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+
+export const getLessonContentController = async (req, res, next) => {
+    try {
+        const lessonId = req.params.id;
+
+      
+        if (!lessonId) {
+            return res.status(400).json({ message: 'Lesson ID is required' });
+        }
+
+        
+        const questions = await lessonService.getQuestionsByLesson(lessonId);
+
+        if (questions.length === 0) {
+            return res.status(404).json({ message: 'Lesson content not found or empty' });
+        }
+
+       
+        res.json({ lessonId, questions });
+    } catch (error) {
+        next(error);
+    }
 };
 
-export const getLessonByIdController = async (req, res) => {
-  try {
-    const lesson = await getLessonById(req.params.id);
-    if (!lesson) return res.status(404).json({ message: 'Lesson not found' });
-    res.json(lesson);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+
+export const createLessonController = async (req, res, next) => {
+    try {
+        
+        const newLesson = await lessonService.createLesson(req.body);
+        res.status(201).json(newLesson);
+    } catch (error) {
+        next(error);
+    }
 };
 
-export const updateLessonController = async (req, res) => {
-  try {
-    const updates = req.body;
-    const updatedLesson = await updateLesson(req.params.id, updates);
-    if (!updatedLesson) return res.status(404).json({ message: 'Lesson not found' });
-    res.json(updatedLesson);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+
+export const updateLessonController = async (req, res, next) => {
+    try {
+        const updatedLesson = await lessonService.updateLesson(req.params.id, req.body);
+        if (!updatedLesson) return res.status(404).json({ message: 'Lesson not found' });
+        res.json(updatedLesson);
+    } catch (error) {
+        next(error);
+    }
 };
 
-export const deleteLessonController = async (req, res) => {
-  try {
-    const deleted = await deleteLesson(req.params.id);
-    if (!deleted) return res.status(404).json({ message: 'Lesson not found' });
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+
+export const deleteLessonController = async (req, res, next) => {
+    try {
+        const deleted = await lessonService.deleteLesson(req.params.id);
+        if (!deleted) return res.status(404).json({ message: 'Lesson not found' });
+        res.status(204).send();
+    } catch (error) {
+        next(error);
+    }
 };
+
+
+export default {
+    getAllCoursesAndLessonsController,
+    getLessonContentController,
+    createLessonController,
+    updateLessonController,
+    deleteLessonController
+}

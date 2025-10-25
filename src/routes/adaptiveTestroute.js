@@ -7,11 +7,32 @@ import {
   deleteAdaptiveTest,
   submitAnswer,
   getTestResults,
-} from '../models/adaptiveTestModel.js';
+} from '../services/getadaptiveservices.js';
+import { generateAdaptiveTest } from '../services/geminiservices.js'; // 👈 added
 
 const router = express.Router();
 
-// Create a new adaptive test
+
+router.post('/generate', async (req, res) => {
+  try {
+    const { topic, numQuestions, userId } = req.body;
+
+    if (!topic || !userId) {
+      return res.status(400).json({ error: 'Topic and userId are required' });
+    }
+
+    const generatedTest = await generateAdaptiveTest(topic, numQuestions || 5, userId);
+    res.status(201).json({
+      message: 'Adaptive test generated successfully using Gemini AI',
+      test: generatedTest,
+    });
+  } catch (error) {
+    console.error('Gemini Test Generation Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 router.post('/', async (req, res) => {
   try {
     const testData = req.body;
@@ -22,7 +43,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all adaptive tests
+
 router.get('/', async (req, res) => {
   try {
     const tests = await getAllAdaptiveTests();
@@ -32,7 +53,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get test by ID
+
 router.get('/:id', async (req, res) => {
   try {
     const test = await getAdaptiveTestById(req.params.id);
@@ -43,7 +64,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update test by ID
+
 router.put('/:id', async (req, res) => {
   try {
     const updates = req.body;
@@ -55,7 +76,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete test by ID
+
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await deleteAdaptiveTest(req.params.id);
@@ -66,7 +87,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Submit an answer
+
 router.post('/:id/submit', async (req, res) => {
   try {
     const { answer } = req.body;
@@ -78,7 +99,7 @@ router.post('/:id/submit', async (req, res) => {
   }
 });
 
-// Get test results
+
 router.get('/:id/results', async (req, res) => {
   try {
     const results = await getTestResults(req.params.id);
@@ -89,3 +110,4 @@ router.get('/:id/results', async (req, res) => {
 });
 
 export default router;
+

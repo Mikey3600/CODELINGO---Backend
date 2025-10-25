@@ -1,66 +1,79 @@
-// src/controllers/gamificationController.js
-import {
-  getUserStats,
-  incrementUserXP,
-  resetUserStreak,
-  getLeaderboard,
-} from '../models/gamification.js';
+import progressService from '../services/progressservice.js';
+import profileService from '../services/profileService.js'; 
 
-// 📊 Get user XP and streak
-export const getUserStatsController = async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+export const getUserStatsController = async (req, res, next) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const stats = await getUserStats(userId);
-    res.json({
-      xp: stats?.xp || 0,
-      streak: stats?.streak || 0,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        
+        const stats = await profileService.getProfileByUserId(userId);
+        
+       
+        if (!stats) {
+             return res.status(404).json({ message: 'User profile not initialized.' });
+        }
+
+        res.json({
+            xp: stats.xp,
+            streak: stats.streak,
+            username: stats.username,
+        });
+    } catch (error) {
+        next(error); 
+    }
 };
 
-// ➕ Add XP to user (and auto-increment streak)
-export const addUserXPController = async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    const { amount } = req.body;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-    if (typeof amount !== 'number' || amount <= 0)
-      return res.status(400).json({ message: 'Invalid XP amount' });
+export const submitLessonResultController = async (req, res, next) => {
+    try {
+        const userId = req.user?.id;
+        const { lessonId, score } = req.body; 
+        if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+        if (!lessonId || typeof score !== 'number' || score < 0 || score > 100)
+            return res.status(400).json({ message: 'Invalid lessonId or score (0-100) provided.' });
+        
+        
+        const progressRecord = await progressService.saveLessonProgress(userId, lessonId, score);
 
-    const updatedStats = await incrementUserXP(userId, amount);
-    res.json({
-      xp: updatedStats.xp,
-      streak: updatedStats.streak,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+       
+        const updatedStats = await profileService.getProfileByUserId(userId);
+        
+ 
+        res.json({
+            message: 'Lesson progress saved and stats updated.',
+            lessonProgress: {
+                lessonId: progressRecord.lesson_id,
+                score: progressRecord.score,
+                attempts: progressRecord.attempts,
+            },
+            userStats: {
+                xp: updatedStats.xp,
+                streak: updatedStats.streak,
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
 };
 
-// 🔁 Reset user streak
-export const resetUserStreakController = async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const updatedStats = await resetUserStreak(userId);
-    res.json({ streak: updatedStats.streak });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+export const getLeaderboardController = async (req, res, next) => {
+    try {
+       
+        const leaderboard = await progressService.getLeaderboard();
+        res.json(leaderboard);
+    } catch (error) {
+        next(error);
+    }
 };
 
-// 🏆 Get leaderboard (sorted by XP)
-export const getLeaderboardController = async (req, res) => {
-  try {
-    const leaderboard = await getLeaderboard();
-    res.json(leaderboard);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+
+
+export default {
+    getUserStatsController,
+    submitLessonResultController,
+    getLeaderboardController,
 };
+

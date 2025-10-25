@@ -1,30 +1,34 @@
-// src/controllers/dsaController.js
-import {
-  fetchDSAProblemsFromSource,
-  getDSAProblems,
-  cacheDSAProblems,
-  syncDSAProblemsWithSource,
-} from '../models/dsaproblem.js';
 
-export const getDSAProblemsController = async (req, res) => {
-  try {
-    let problems = await getDSAProblems();
-    if (!problems || problems.length === 0) {
-      problems = await fetchDSAProblemsFromSource();
-      await cacheDSAProblems(problems);
+import dsaService from '../services/dsaServices.js';
+
+export const getDSAProblemsController = async (req, res, next) => {
+    try {
+        
+        let problems = await dsaService.getCachedProblems();
+
+       
+        if (!problems || problems.length === 0) {
+            console.log("Cache miss or expired. Initiating sync...");
+            problems = await dsaService.syncAndCacheDSAProblems();
+        }
+        
+        
+        res.json(problems);
+    } catch (error) {
+        next(error); 
     }
-    res.json(problems);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 };
 
-export const refreshDSAProblemsController = async (req, res) => {
-  try {
-    const problems = await syncDSAProblemsWithSource();
-    await cacheDSAProblems(problems);
-    res.json({ message: 'DSA problems synced successfully', count: problems.length });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+export const refreshDSAProblemsController = async (req, res, next) => {
+    try {
+        
+        const problems = await dsaService.syncAndCacheDSAProblems();
+        
+        res.json({ 
+            message: 'DSA problems synced successfully with the external source.', 
+            count: problems.length 
+        });
+    } catch (error) {
+        next(error); 
+    }
 };

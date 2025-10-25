@@ -1,83 +1,83 @@
-// src/controllers/adaptiveTestController.js
-import {
-  createAdaptiveTest,
-  getAdaptiveTestById,
-  getAdaptiveTestsByUser,
-  updateAdaptiveTest,
-  deleteAdaptiveTest,
-} from '../models/adaptiveTestModel.js';
 
-// 🧩 Create a new adaptive test
-export const createAdaptiveTestController = async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    const { testData, currentLevel, score, startedAt, finishedAt } = req.body;
+import adaptiveTestService from '../services/getadaptiveservices.js';
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+export const createAdaptiveTestController = async (req, res, next) => {
+    try {
+        const userId = req.user.id; 
+        const { testData, currentLevel, score, startedAt, finishedAt } = req.body;
 
-    const newTest = await createAdaptiveTest({
-      userId,
-      testData,
-      currentLevel,
-      score,
-      startedAt: startedAt || new Date().toISOString(),
-      finishedAt: finishedAt || null,
-    });
+        const newTest = await adaptiveTestService.createAdaptiveTest({
+            userId,
+            testData,
+            currentLevel,
+            score: score || 0,
+            startedAt: startedAt || new Date().toISOString(),
+            finishedAt: finishedAt || null,
+        });
 
-    res.status(201).json(newTest);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        res.status(201).json(newTest);
+    } catch (error) {
+        next(error);
+    }
 };
 
-// 🔍 Get a single test by ID
-export const getAdaptiveTestByIdController = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const test = await getAdaptiveTestById(id);
-    if (!test) return res.status(404).json({ message: 'Test not found' });
-    res.json(test);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+export const getAdaptiveTestByIdController = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const test = await adaptiveTestService.getAdaptiveTestById(id);
+
+        if (!test) {
+            return res.status(404).json({ message: 'Test not found' });
+        }
+        
+        res.json(test);
+    } catch (error) {
+        next(error);
+    }
 };
 
-// 📋 Get all tests for the logged-in user
-export const getUserAdaptiveTestsController = async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+export const getUserAdaptiveTestsController = async (req, res, next) => {
+    try {
+        const userId = req.user.id; 
 
-    const tests = await getAdaptiveTestsByUser(userId);
-    res.json(tests);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        const tests = await adaptiveTestService.getAdaptiveTestsByUser(userId);
+        res.json(tests);
+    } catch (error) {
+        next(error);
+    }
 };
 
-// ✏️ Update an adaptive test
-export const updateAdaptiveTestController = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
-
-    const updatedTest = await updateAdaptiveTest(id, updates);
-    if (!updatedTest) return res.status(404).json({ message: 'Test not found' });
-    res.json(updatedTest);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+export const updateAdaptiveTestController = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        
+        
+        const updatedTest = await adaptiveTestService.updateAdaptiveTest(id, updates);
+        
+        if (!updatedTest) {
+            return res.status(404).json({ message: 'Test not found or no changes made' });
+        }
+        res.json(updatedTest);
+    } catch (error) {
+        next(error);
+    }
 };
 
-// ❌ Delete an adaptive test
-export const deleteAdaptiveTestController = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const deleteAdaptiveTestController = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        
+       
 
-    const deletedTest = await deleteAdaptiveTest(id);
-    if (!deletedTest) return res.status(404).json({ message: 'Test not found' });
-    res.json({ message: 'Test deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        const deleted = await adaptiveTestService.deleteAdaptiveTest(id);
+        
+        if (!deleted) {
+           
+            return res.status(404).json({ message: 'Test not found for deletion' });
+        }
+        res.json({ message: 'Test deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
 };

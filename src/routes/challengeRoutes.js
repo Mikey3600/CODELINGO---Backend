@@ -1,4 +1,4 @@
-// src/routes/challengeRoutes.js
+
 import express from 'express';
 import {
   createChallenge,
@@ -6,11 +6,11 @@ import {
  
   updateChallenge,
   deleteChallenge,
-} from '../models/challengeModel.js';
+} from '../services/challengeService.js';
 
 const router = express.Router();
 
-// Create a new challenge
+
 router.post('/', async (req, res) => {
   try {
     const challengeData = req.body;
@@ -21,10 +21,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all challenges
 
 
-// Get challenge by ID
+
+
 router.get('/:id', async (req, res) => {
   try {
     const challenge = await getChallengeById(req.params.id);
@@ -35,7 +35,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update challenge by ID
+
 router.put('/:id', async (req, res) => {
   try {
     const updates = req.body;
@@ -47,7 +47,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete challenge by ID
+
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await deleteChallenge(req.params.id);

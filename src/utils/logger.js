@@ -1,5 +1,43 @@
-export const logger = {
-  info: (msg) => console.log(`[INFO] ${new Date().toISOString()} - ${msg}`),
-  warn: (msg) => console.warn(`[WARN] ${new Date().toISOString()} - ${msg}`),
-  error: (msg) => console.error(`[ERROR] ${new Date().toISOString()} - ${msg}`),
+const formatData = (data) => {
+    if (data instanceof Error) {
+        return `\n\tMessage: ${data.message}\n\tStack: ${data.stack}`;
+    }
+    if (typeof data === 'object' && data !== null) {
+        try {
+            return `\n\tData: ${JSON.stringify(data, null, 2)}`;
+        } catch (e) {
+            return `\n\tData: [Error serializing object]`;
+        }
+    }
+    return '';
 };
+
+export const logger = {
+    
+    log: (level, msg, data = null) => {
+        const timestamp = new Date().toISOString();
+        const formattedData = data ? formatData(data) : '';
+        
+        const logMessage = `[${level.toUpperCase()}] ${timestamp} - ${msg}${formattedData}`;
+
+        switch (level) {
+            case 'info':
+                console.log(logMessage);
+                break;
+            case 'warn':
+                console.warn(logMessage);
+                break;
+            case 'error':
+            default:
+                
+                console.error(logMessage);
+                break;
+        }
+    },
+    
+    info: (msg, data) => logger.log('info', msg, data),
+    warn: (msg, data) => logger.log('warn', msg, data),
+    error: (msg, data) => logger.log('error', msg, data),
+};
+
+export default logger;

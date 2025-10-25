@@ -1,4 +1,4 @@
-// src/routes/projectRoutes.js
+
 import express from 'express';
 import {
   createProject,
@@ -6,11 +6,11 @@ import {
   getAllProjects,
   updateProject,
   deleteProject,
-} from '../models/projectstepModel.js';
+} from '../services/projectstepservices.js';
 
 const router = express.Router();
 
-// Create a new project
+
 router.post('/', async (req, res) => {
   try {
     const projectData = req.body;
@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all projects
+
 router.get('/', async (req, res) => {
   try {
     const projects = await getAllProjects();
@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get project by ID
+
 router.get('/:id', async (req, res) => {
   try {
     const project = await getProjectById(req.params.id);
@@ -42,7 +42,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update project by ID
+
 router.put('/:id', async (req, res) => {
   try {
     const updates = req.body;
@@ -54,7 +54,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete project by ID
+
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await deleteProject(req.params.id);
