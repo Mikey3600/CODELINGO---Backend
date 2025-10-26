@@ -1,7 +1,7 @@
 import express from 'express';
 import { serverSupabase } from '../utils/supabaseClient.js';
 import AppError from '../utils/apperror.js';
-import logger from '../utils/logger.js';
+import logger from '../utils/logger.js'; // <-- FIX: Added the .js extension
 // Assuming you have an authentication middleware for userId extraction
 // import { protect } from '../middleware/authMiddleware.js'; 
 
@@ -17,7 +17,9 @@ const USER_LESSON_PROGRESS_TABLE = 'user_lessons';
  * @description Inserts a new lesson into the database.
  */
 const createLessonService = async (lessonData) => {
+    // We rely on the route handler to ensure the correct DB column names are present 
     if (!lessonData.course_id || !lessonData.title) {
+        // This check is very basic; the route handler does the comprehensive check
         throw new AppError('Lesson requires a course_id and title.', 400);
     }
     
@@ -28,7 +30,9 @@ const createLessonService = async (lessonData) => {
         .single();
 
     if (error) {
-        logger.error('Database error creating lesson:', { error: error.message });
+        // Ensure we log the specific database error message
+        logger.error('Database error creating lesson:', { error: error.message, detail: error.details });
+        // The error message from the DB will now be included in the response message
         throw new AppError(`Database error creating lesson: ${error.message}`, 500);
     }
     return data;
@@ -183,7 +187,25 @@ router.get('/:id', async (req, res, next) => {
 // NOTE: Add a 'protect' and 'admin' middleware here if applicable
 router.post('/', async (req, res, next) => {
     try {
-        const newLesson = await createLessonService(req.body);
+        // ** IMPORTANT: The request body fields must match your Supabase column names **
+        const lessonData = { ...req.body };
+        
+        // **--- MODIFIED CHECK ---**
+        // Check for ALL known NOT NULL fields: course_id, title, content, difficulty, AND unit_order.
+        // We use == null to catch both undefined and null values.
+        if (!lessonData.course_id || 
+            !lessonData.title || 
+            !lessonData.content || 
+            !lessonData.difficulty || 
+            lessonData.unit_order == null) {
+                
+            throw new AppError('Missing required fields. You must provide: course_id (UUID), title, content, difficulty, AND unit_order (integer).', 400);
+        }
+        // **--- END MODIFIED CHECK ---**
+        
+        // NOTE: The value of lessonData.course_id must be a valid UUID string here.
+
+        const newLesson = await createLessonService(lessonData);
         res.status(201).json(newLesson);
     } catch (error) {
         next(error);
@@ -193,9 +215,12 @@ router.post('/', async (req, res, next) => {
 // PUT /api/lessons/:id - Update a lesson (Admin route, likely protected)
 router.put('/:id', async (req, res, next) => {
     try {
-        const updatedLesson = await updateLessonService(req.params.id, req.body);
+        // No mapping needed, the request body should send the fields exactly as they are in the DB
+        const updates = { ...req.body };
+
+        const updatedLesson = await updateLessonService(req.params.id, updates);
         if (!updatedLesson) {
-             return res.status(404).json({ message: 'Lesson not found for update' });
+            return res.status(404).json({ message: 'Lesson not found for update' });
         }
         res.status(200).json(updatedLesson);
     } catch (error) {
@@ -208,7 +233,7 @@ router.delete('/:id', async (req, res, next) => {
     try {
         const deleted = await deleteLessonService(req.params.id);
         if (!deleted) {
-             return res.status(404).json({ message: 'Lesson not found for deletion' });
+            return res.status(404).json({ message: 'Lesson not found for deletion' });
         }
         res.status(204).send(); // 204 No Content
     } catch (error) {
@@ -265,3 +290,4 @@ router.post('/progress', async (req, res, next) => {
 
 
 export default router;
+
