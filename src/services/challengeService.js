@@ -42,11 +42,7 @@ export async function getChallengeById(challengeId) {
 }
 
 
-/**
- * @function getAllChallenges
- * @description Retrieves a summary list of all available challenges.
- * @returns {Promise<Array>} List of challenge summary objects.
- */
+
 export async function getAllChallenges() {
     const { data, error } = await serverSupabase
         .from(CHALLENGES_TABLE)
