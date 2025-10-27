@@ -23,7 +23,7 @@ export async function getAiResponse(prompt, context = "") {
     
     return response.choices[0].message.content;
   } catch (error) {
-    console.error("❌ OpenAI API Error:", error);
+    console.error(" OpenAI API Error:", error);
     throw new Error("Failed to generate AI response");
   }
 }

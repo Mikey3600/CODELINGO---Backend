@@ -3,11 +3,7 @@ import AppError from '../utils/apperror.js';
 
 const LANGUAGE_TABLE = 'languages';
 
-/**
- * @function getAllLanguages
- * @description .
- * @returns {Promise<Array>} 
- */
+
 export const getAllLanguages = async () => {
     const { data, error } = await serverSupabase
         .from(LANGUAGE_TABLE)
