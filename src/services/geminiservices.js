@@ -1,23 +1,14 @@
 import { serverSupabase } from "../utils/supabaseClient.js"; 
 import logger from '../utils/logger.js';
-import AppError from '../utils/apperror.js'; // Corrected capitalization
-import axios from 'axios';
+import AppError from '../utils/apperror.js'; 
 
-// Configuration based on standard Gemini API integration
+
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
 
-// System Instruction for the Gemini model used for specific tasks (e.g., personalized tips)
+
 const SYSTEM_INSTRUCTION = "You are an expert CodeLingo study assistant. Provide concise, encouraging, and accurate coding tips based on the user's activity.";
 
 
-/**
- * @function getGeminiResponse
- * @description Core function to generate content using the Gemini API with structured output and retries (Exponential Backoff).
- * @param {string} userPrompt - The user's query or content generation request.
- * @param {object|null} responseSchema - Optional JSON schema for structured output.
- * @param {Array<Object>} [history=[]] - Optional conversation history for mentor response.
- * @returns {Promise<string|object>} The generated text or parsed JSON object.
- */
 export async function getGeminiResponse(userPrompt, responseSchema = null, history = []) {
     if (!process.env.GEMINI_API_KEY) {
         logger.error('GEMINI_API_KEY is not set.');
@@ -28,13 +19,13 @@ export async function getGeminiResponse(userPrompt, responseSchema = null, histo
     const apiUrl = `${GEMINI_API_URL}?key=${apiKey}`;
     let lastError = null;
 
-    // Combine user prompt with any history for conversational context
+    
     const contents = [...history, { role: "user", parts: [{ text: userPrompt }] }];
 
     const payload = {
         contents: contents,
         systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-        // Optional structured output configuration
+       
         ...(responseSchema && {
             generationConfig: {
                 responseMimeType: "application/json",

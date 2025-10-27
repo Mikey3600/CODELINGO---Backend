@@ -1,13 +1,8 @@
 import { serverSupabase } from '../utils/supabaseClient.js';
 
 const TESTS_TABLE = 'adaptive_tests';
-const RESULTS_TABLE = 'user_test_results'; // Note: This table is not currently used in the functions below
+const RESULTS_TABLE = 'user_test_results'; 
 
-/**
- * Creates a new adaptive test session record in the database.
- * @param {object} testData - The data for the new test session.
- * @returns {Promise<object>} The created test record.
- */
 export async function createAdaptiveTest(testData) {
     const { data, error } = await serverSupabase
         .from(TESTS_TABLE)
