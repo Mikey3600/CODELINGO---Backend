@@ -135,7 +135,7 @@ const updateLessonProgressService = async (userId, courseId, lessonIndex, status
     return data;
 };
 
-s
+
 router.get('/', async (req, res, next) => {
     try {
         const lessons = await getAllLessonsService();
