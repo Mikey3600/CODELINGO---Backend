@@ -1,11 +1,11 @@
 import { serverSupabase } from '../utils/supabaseClient.js';
-import { generateContent } from './aiService.js'; // Needed if problems are AI-generated
+import { generateContent } from './aiService.js'; 
 import AppError from '../utils/apperror.js';
 import logger from '../utils/logger.js';
 
 
 const DSA_PROBLEMS_TABLE = 'dsa_problems'; 
-const EXTERNAL_SOURCES = ['leetcode', 'hackerank', 'codewars']; // Mock external sources
+const EXTERNAL_SOURCES = ['leetcode', 'hackerank', 'codewars']; 
 
 
 export async function createProblem(problemData) {

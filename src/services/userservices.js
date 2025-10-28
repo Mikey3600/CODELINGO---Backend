@@ -21,9 +21,9 @@ export const getUserByIdService = async (userId) => {
 export const updateUserService = async (userId, updates) => {
     console.log(`[UserService] Attempting to update user ${userId} with data:`, updates);
     
-    // TODO: Replace this mock logic with actual database update operations.
+    
     if (userId === '12345') {
-        // In a real application, you'd merge updates and return the result
+        
         return { 
             id: '12345', 
             username: updates.username || 'testuser', 
