@@ -1,25 +1,21 @@
 import express from 'express';
 import { serverSupabase } from '../utils/supabaseClient.js';
 import AppError from '../utils/apperror.js';
-import logger from '../utils/logger.js'; // <-- FIX: Added the .js extension
-// Assuming you have an authentication middleware for userId extraction
-// import { protect } from '../middleware/authMiddleware.js'; 
+import logger from '../utils/logger.js'; 
+ 
 
 const router = express.Router();
 
 const LESSON_TABLE = 'lessons'; 
 const USER_LESSON_PROGRESS_TABLE = 'user_lessons';
 
-// --- SERVICE FUNCTIONS (Backend Logic) ---
 
-/**
- * @function createLesson
- * @description Inserts a new lesson into the database.
- */
+
+
 const createLessonService = async (lessonData) => {
-    // We rely on the route handler to ensure the correct DB column names are present 
+    
     if (!lessonData.course_id || !lessonData.title) {
-        // This check is very basic; the route handler does the comprehensive check
+        
         throw new AppError('Lesson requires a course_id and title.', 400);
     }
     
@@ -30,18 +26,15 @@ const createLessonService = async (lessonData) => {
         .single();
 
     if (error) {
-        // Ensure we log the specific database error message
+        
         logger.error('Database error creating lesson:', { error: error.message, detail: error.details });
-        // The error message from the DB will now be included in the response message
+        
         throw new AppError(`Database error creating lesson: ${error.message}`, 500);
     }
     return data;
 };
 
-/**
- * @function getAllLessons
- * @description Fetches all lessons, ordered by course ID.
- */
+
 const getAllLessonsService = async () => {
     const { data, error } = await serverSupabase
         .from(LESSON_TABLE)
@@ -55,10 +48,7 @@ const getAllLessonsService = async () => {
     return data || [];
 };
 
-/**
- * @function getLessonById
- * @description Fetches a single lesson by its UUID.
- */
+
 const getLessonByIdService = async (lessonId) => {
     const { data, error } = await serverSupabase
         .from(LESSON_TABLE)
@@ -73,10 +63,7 @@ const getLessonByIdService = async (lessonId) => {
     return data;
 };
 
-/**
- * @function updateLesson
- * @description Updates lesson details by ID.
- */
+
 const updateLessonService = async (lessonId, updates) => {
     const { data, error } = await serverSupabase
         .from(LESSON_TABLE)
@@ -92,10 +79,7 @@ const updateLessonService = async (lessonId, updates) => {
     return data;
 };
 
-/**
- * @function deleteLesson
- * @description Deletes a lesson by its ID.
- */
+
 const deleteLessonService = async (lessonId) => {
     const { error, count } = await serverSupabase
         .from(LESSON_TABLE)
@@ -110,10 +94,7 @@ const deleteLessonService = async (lessonId) => {
 };
 
 
-/**
- * @function getLessonProgress
- * @description Fetches a specific user's progress for a lesson.
- */
+
 const getLessonProgressService = async (userId, courseId, lessonIndex) => {
     const { data, error } = await serverSupabase
         .from(USER_LESSON_PROGRESS_TABLE)
@@ -130,10 +111,7 @@ const getLessonProgressService = async (userId, courseId, lessonIndex) => {
     return data;
 };
 
-/**
- * @function updateLessonProgress
- * @description Inserts or updates a user's progress for a lesson using upsert.
- */
+
 const updateLessonProgressService = async (userId, courseId, lessonIndex, status) => {
     
     const { data, error } = await serverSupabase
@@ -145,7 +123,7 @@ const updateLessonProgressService = async (userId, courseId, lessonIndex, status
             completion_status: status,
             updated_at: new Date().toISOString()
         }, { 
-            onConflict: 'user_id, course_id, lesson_index' // Columns that define uniqueness
+            onConflict: 'user_id, course_id, lesson_index' 
         })
         .select()
         .single();
@@ -157,10 +135,7 @@ const updateLessonProgressService = async (userId, courseId, lessonIndex, status
     return data;
 };
 
-
-// --- EXPRESS ROUTE HANDLERS ---
-
-// GET /api/lessons - Fetch all lessons
+s
 router.get('/', async (req, res, next) => {
     try {
         const lessons = await getAllLessonsService();
@@ -170,7 +145,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-// GET /api/lessons/:id - Fetch lesson by ID
+
 router.get('/:id', async (req, res, next) => {
     try {
         const lesson = await getLessonByIdService(req.params.id);
@@ -183,16 +158,12 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-// POST /api/lessons - Create a new lesson (Admin route, likely protected)
-// NOTE: Add a 'protect' and 'admin' middleware here if applicable
 router.post('/', async (req, res, next) => {
     try {
-        // ** IMPORTANT: The request body fields must match your Supabase column names **
+        
         const lessonData = { ...req.body };
         
-        // **--- MODIFIED CHECK ---**
-        // Check for ALL known NOT NULL fields: course_id, title, content, difficulty, AND unit_order.
-        // We use == null to catch both undefined and null values.
+     
         if (!lessonData.course_id || 
             !lessonData.title || 
             !lessonData.content || 
@@ -201,9 +172,7 @@ router.post('/', async (req, res, next) => {
                 
             throw new AppError('Missing required fields. You must provide: course_id (UUID), title, content, difficulty, AND unit_order (integer).', 400);
         }
-        // **--- END MODIFIED CHECK ---**
         
-        // NOTE: The value of lessonData.course_id must be a valid UUID string here.
 
         const newLesson = await createLessonService(lessonData);
         res.status(201).json(newLesson);
@@ -212,10 +181,10 @@ router.post('/', async (req, res, next) => {
     }
 });
 
-// PUT /api/lessons/:id - Update a lesson (Admin route, likely protected)
+
 router.put('/:id', async (req, res, next) => {
     try {
-        // No mapping needed, the request body should send the fields exactly as they are in the DB
+        
         const updates = { ...req.body };
 
         const updatedLesson = await updateLessonService(req.params.id, updates);
@@ -228,29 +197,26 @@ router.put('/:id', async (req, res, next) => {
     }
 });
 
-// DELETE /api/lessons/:id - Delete a lesson (Admin route, likely protected)
+
 router.delete('/:id', async (req, res, next) => {
     try {
         const deleted = await deleteLessonService(req.params.id);
         if (!deleted) {
             return res.status(404).json({ message: 'Lesson not found for deletion' });
         }
-        res.status(204).send(); // 204 No Content
+        res.status(204).send();
     } catch (error) {
         next(error);
     }
 });
 
 
-// --- USER PROGRESS ROUTES (Requires Authentication/User ID) ---
 
-// Assuming user ID is available in req.user.id after an authentication middleware
-// GET /api/lessons/progress/:courseId/:lessonIndex - Get user progress for a specific lesson
-// router.get('/progress/:courseId/:lessonIndex', protect, async (req, res, next) => {
+
+
 router.get('/progress/:courseId/:lessonIndex', async (req, res, next) => {
     try {
-        // const userId = req.user.id; // Uncomment if you have auth middleware
-        // For now, use a placeholder or extract from query/body if needed
+    
         const userId = req.query.userId || 'placeholder_user_id'; 
         
         const { courseId, lessonIndex } = req.params;
@@ -262,11 +228,10 @@ router.get('/progress/:courseId/:lessonIndex', async (req, res, next) => {
     }
 });
 
-// POST /api/lessons/progress - Update user progress (Requires Authentication/User ID)
-// router.post('/progress', protect, async (req, res, next) => {
+
 router.post('/progress', async (req, res, next) => {
     try {
-        // const userId = req.user.id; // Uncomment if you have auth middleware
+        
         const userId = req.body.userId || 'placeholder_user_id'; 
 
         const { course_id, lesson_index, status } = req.body;
