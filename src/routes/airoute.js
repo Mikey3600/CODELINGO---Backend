@@ -7,14 +7,17 @@ import {
     handleAIGenerateQuestions 
 } from '../controller/aicontroller.js';
 
-// FIX: Importing the DEFAULT export and naming it 'protect'.
+
+
 import protect from '../middleware/authmiddleware.js'; 
 
 
-router.post('/chat', protect, handleAIChat);
+
+router.post('/chat', handleAIChat);
 
 
-router.post('/generate-questions', protect, handleAIGenerateQuestions);
+
+router.post('/generate-questions', handleAIGenerateQuestions);
 
 
 export default router;
