@@ -1,5 +1,5 @@
 import express from 'express';
-// CRITICAL FIX: The router object must be initialized before use.
+
 const router = express.Router(); 
 
 import { 
