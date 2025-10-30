@@ -4,7 +4,7 @@ import { serverSupabase } from '../../index.js';
 import profileService from '../services/profileService.js'; 
 
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET ;
 const JWT_EXPIRES_IN = '7d';
 
 
