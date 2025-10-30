@@ -26,31 +26,31 @@ async function callGeminiApiWithRetry(endpoint, payload, maxRetries = 3) {
             const responseData = await response.json();
 
             if (response.ok) {
-                // Successful response
+                
                 return responseData;
             }
 
-            // Handle non-OK responses
+            
             if (response.status === 429 || response.status === 500 || response.status === 503) {
-                // Transient errors: Wait and retry
+                
                 const delay = Math.pow(2, attempt) * 1000 + (Math.random() * 1000); // 1s, 2s, 4s + jitter
                 logger.warn(`API call failed with status ${response.status}. Retrying in ${delay}ms (Attempt ${attempt + 1}/${maxRetries}).`);
                 await new Promise(resolve => setTimeout(resolve, delay));
-                continue; // Skip to the next attempt
+                continue; 
             }
 
-            // Non-transient errors (e.g., 400, 403, 404, bad API Key)
+            
             logger.error(`Gemini API Fatal Error (Status ${response.status}):`, responseData);
-            // Throw a specific error to be caught by the main controller
+           
             throw new Error(`Gemini API Error: ${response.status} - ${JSON.stringify(responseData.error || responseData)}`);
 
         } catch (error) {
-            // Catches network errors, JSON parsing errors, or the re-thrown fatal API error
+            
             logger.error(`Network or Parsing error during API call: ${error.message}`);
-            // If this is the last attempt, re-throw the error
+            
             if (attempt === maxRetries - 1) throw error; 
 
-            // Otherwise, apply backoff and retry
+            
             const delay = Math.pow(2, attempt) * 1000 + (Math.random() * 1000);
             logger.warn(`Network failure. Retrying in ${delay}ms (Attempt ${attempt + 1}/${maxRetries}).`);
             await new Promise(resolve => setTimeout(resolve, delay));
@@ -59,14 +59,9 @@ async function callGeminiApiWithRetry(endpoint, payload, maxRetries = 3) {
 }
 
 
-// --- Controller Functions ---
 
-/**
- * Handles a chat request to the AI mentor.
- * POST /api/v1/ai/chat
- */
 export const handleAIChat = async (req, res) => {
-    // Note: req.user is populated by the 'protect' middleware.
+   
     const { prompt, chatHistory = [] } = req.body; 
 
     if (!prompt) {
@@ -75,13 +70,12 @@ export const handleAIChat = async (req, res) => {
 
     const apiUrl = `${API_BASE_URL}/${MODEL_NAME}:generateContent?key=${API_KEY}`;
     
-    // Convert client-side history format to the API's format
-    // Assuming the client history is in [{ role: 'user' | 'model', parts: [{ text: '...' }] }] format
+   
     const contents = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
 
     const payload = {
         contents: contents,
-        tools: [{ "google_search": {} }], // Enable grounding for relevant, up-to-date responses
+        tools: [{ "google_search": {} }], 
         systemInstruction: {
             parts: [{ text: `You are a friendly, encouraging, and knowledgeable AI mentor 
                 for coding students. Provide helpful, conversational explanations and guidance. 
