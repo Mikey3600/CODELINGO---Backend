@@ -1,7 +1,6 @@
-import logger from '../utils/logger.js'; // Assuming you have a logger utility
+import logger from '../utils/logger.js'; 
 
-// --- Configuration ---
-// Get API Key from environment variables
+
 const API_KEY = process.env.GEMINI_API_KEY;
 const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
@@ -11,15 +10,7 @@ if (!API_KEY) {
     throw new Error("Missing GEMINI_API_KEY. AI services cannot function.");
 }
 
-// --- Utility Function with Exponential Backoff ---
 
-/**
- * Calls the Gemini API with retry logic for transient errors (429, 500, 503).
- * @param {string} endpoint The full URL for the API call.
- * @param {object} payload The JSON payload for the request.
- * @param {number} maxRetries Maximum number of retries.
- * @returns {Promise<object>} The JSON response data from the API.
- */
 async function callGeminiApiWithRetry(endpoint, payload, maxRetries = 3) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -27,7 +18,7 @@ async function callGeminiApiWithRetry(endpoint, payload, maxRetries = 3) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // API Key is passed via the query parameter, which is standard for this API usage
+                  
                 },
                 body: JSON.stringify(payload),
             });
@@ -132,8 +123,8 @@ export const handleAIChat = async (req, res) => {
         });
 
     } catch (error) {
-        // Line 35 is now handled within the robust callGeminiApiWithRetry function.
-        // If it reaches here, it's a final, fatal error.
+        
+        
         logger.error('Final error in handleAIChat:', error.message);
         return res.status(500).json({ 
             status: 'error', 
@@ -143,10 +134,7 @@ export const handleAIChat = async (req, res) => {
     }
 };
 
-/**
- * Handles a request to generate questions based on provided text/context.
- * POST /api/v1/ai/generate-questions
- */
+
 export const handleAIGenerateQuestions = async (req, res) => {
     const { contextText, difficulty = 'Medium' } = req.body;
 
