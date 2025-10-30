@@ -90,7 +90,7 @@ export const handleAIChat = async (req, res) => {
         const generatedText = candidate?.content?.parts?.[0]?.text;
 
         if (!generatedText) {
-            // This catches cases where the API call succeeded but returned no text (e.g., was blocked)
+            
             logger.error('AI response failed to generate text:', result);
             return res.status(500).json({ 
                 status: 'error', 
@@ -99,7 +99,7 @@ export const handleAIChat = async (req, res) => {
             });
         }
         
-        // Extract grounding sources (citations)
+        
         let sources = [];
         const groundingMetadata = candidate.groundingMetadata;
         if (groundingMetadata && groundingMetadata.groundingAttributions) {
