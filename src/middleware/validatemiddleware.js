@@ -1,6 +1,5 @@
 import Joi from "joi";
-import AppError from "../utils/apperror.js"; // Import the custom error class
-
+import AppError from "../utils/apperror.js"; 
 
 export const validateRequest = (schema) => (req, res, next) => {
     
