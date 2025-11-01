@@ -2,7 +2,7 @@ import express from 'express';
 
 const router = express.Router();
 
-// सुनिश्चित करें कि serverSupabase Admin Key के साथ initialized है
+
 import { serverSupabase } from '../utils/supabaseClient.js';
 import AppError from '../utils/apperror.js'; 
 import logger from '../utils/logger.js'; 
@@ -51,7 +51,7 @@ export const registerUser = async (email, password, username) => {
         throw new AppError('Registration successful, but user object missing. Check email for confirmation if required.', 202);
     }
 
-    // 3. Create initial profile entry
+    
     const { data: newProfile, error: profileError } = await serverSupabase
         .from(PROFILE_TABLE)
         .insert({ 
@@ -89,8 +89,7 @@ export const loginUser = async (email, password) => {
     });
 
     if (authError) {
-       // यदि email_confirmed_at NULL है, तो Supabase आमतौर पर "Invalid email or password" error देता है।
-       // हमारा फिक्स (Step 4) अब यह सुनिश्चित करता है कि loginUser को यह error न मिले।
+      
         throw new AppError('Invalid email or password.', 401);
     }
 
