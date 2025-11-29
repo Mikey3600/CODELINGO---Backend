@@ -1,38 +1,55 @@
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import { asyncHandler } from "./asyncHandler.js";
 
-import { serverSupabase } from '../utils/supabaseClient.js'; 
-import logger from '../utils/logger.js'; 
+export const protect = asyncHandler(async (req, res, next) => {
+  let token;
 
-const authMiddleware = async (req, res, next) => {
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!token) {
+    return res.status(401).json({
+      error: "Authorization required",
+      details: { code: "no_token" },
+    });
+  }
+
+  try {
     
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-       
-        return res.status(401).json({ error: 'Unauthorized: Missing or malformed token.' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    
+    const user = await User.findById(decoded.id).select("-passwordHash");
+
+    if (!user) {
+      return res.status(401).json({
+        error: "User not found",
+        details: { code: "user_not_found" },
+      });
     }
 
-    const token = authHeader.split(' ')[1];
+    
+    req.user = user;
 
-    try {
-       
-        const { data, error } = await serverSupabase.auth.getUser(token);
-
-        if (error || !data.user) {
-            logger.error('Supabase Auth Verification Error:', error ? error.message : 'No user found after verification.');
-            return res.status(401).json({ error: 'Unauthorized: Invalid token or user does not exist.' });
-        }
-
-        
-        req.user = data.user;
-        next();
-
-    } catch (error) {
-        
-        logger.error('Supabase Auth Middleware Exception (500 Error):', error.message);
-        
-        return res.status(500).json({ error: 'Internal server error during token verification.' });
+    next();
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({
+        error: "Token expired",
+        details: { code: "token_expired" },
+      });
     }
-};
 
-export default authMiddleware;
-
+    return res.status(401).json({
+      error: "Invalid token",
+      details: { code: "invalid_token" },
+    });
+  }
+});
 

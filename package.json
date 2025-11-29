@@ -5,8 +5,8 @@
   "description": "This is the backend for **CodeLingo**, a learning platform for coding, challenges, AI mentorship, adaptive testing, and gamification. Built with Node.js, Express and Supabase",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "jest"
   },
   "keywords": [],
@@ -16,11 +16,15 @@
     "@supabase/supabase-js": "^2.75.1",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "groq-sdk": "^0.36.0",
     "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.0.0",
     "morgan": "^1.10.1",
+    "multer": "^2.0.2",
     "node-fetch": "^3.3.1",
     "openai": "^6.5.0"
   },
