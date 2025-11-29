@@ -57,14 +57,14 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-// -------------------- API Routes --------------------
+
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/tutor", tutorRoutes);
 
-// -------------------- 404 Handler --------------------
+
 app.use((req, res) => {
   res.status(404).json({
     error: "Endpoint not found",
@@ -72,10 +72,8 @@ app.use((req, res) => {
   });
 });
 
-// -------------------- Error Handler --------------------
-app.use(errorHandler);
 
-// Export
+app.use(errorHandler);
 export default app;
 
 
