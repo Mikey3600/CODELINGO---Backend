@@ -1,18 +1,18 @@
-import express from 'express';
-import UserProgress from '../models/Userprogress.js';
-import Question from '../models/Question.js';
+import express from "express";
+import UserProgress from "../models/Userprogress.js";
+import Question from "../models/Question.js";
 
 const router = express.Router();
 
 // POST /api/progress/submit
-router.post('/submit', async (req, res) => {
+router.post("/submit", async (req, res) => {
   try {
     const { userId, languageCode, lessonId, questionId, answer } = req.body;
 
     if (!userId || !languageCode || !lessonId || !questionId || answer === undefined) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields'
+        message: "Missing required fields"
       });
     }
 
@@ -20,15 +20,15 @@ router.post('/submit', async (req, res) => {
     if (!question) {
       return res.status(404).json({
         success: false,
-        message: 'Question not found'
+        message: "Question not found"
       });
     }
 
     const isCorrect = question.correctAnswer === answer;
 
-    const totalQuestions = await Question.countDocuments({
-      lessonId,
-      isActive: true
+    const totalQuestions = await Question.countDocuments({ 
+      lessonId: lessonId,
+      isActive: true 
     });
 
     let progress = await UserProgress.findOne({ userId, languageCode, lessonId });
@@ -45,7 +45,9 @@ router.post('/submit', async (req, res) => {
       });
     } else {
       progress.completedQuestions += 1;
-      if (isCorrect) progress.correctAnswers += 1;
+      if (isCorrect) {
+        progress.correctAnswers += 1;
+      }
       progress.attempts += 1;
       progress.lastAttemptDate = Date.now();
     }
@@ -68,27 +70,27 @@ router.post('/submit', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error submitting answer:', error);
+    console.error("Error submitting answer:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error while submitting answer',
+      message: "Server error while submitting answer",
       error: error.message
     });
   }
 });
 
 // GET /api/progress/:userId/c
-router.get('/:userId/c', async (req, res) => {
+router.get("/:userId/c", async (req, res) => {
   try {
     const { userId } = req.params;
 
     const progress = await UserProgress.find({
-      userId,
-      languageCode: 'c'
+      userId: userId,
+      languageCode: "c"
     })
-      .populate('lessonId', 'title description difficulty')
-      .sort({ updatedAt: -1 })
-      .select('-__v');
+    .populate("lessonId", "title description difficulty")
+    .sort({ updatedAt: -1 })
+    .select("-__v");
 
     res.status(200).json({
       success: true,
@@ -96,10 +98,10 @@ router.get('/:userId/c', async (req, res) => {
       data: progress
     });
   } catch (error) {
-    console.error('Error fetching user progress:', error);
+    console.error("Error fetching user progress:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error while fetching progress',
+      message: "Server error while fetching progress",
       error: error.message
     });
   }

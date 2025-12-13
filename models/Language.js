@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const languageSchema = new mongoose.Schema({
   name: {
@@ -20,11 +20,11 @@ const languageSchema = new mongoose.Schema({
   },
   icon: {
     type: String,
-    default: 'code'
+    default: "code"
   },
   color: {
     type: String,
-    default: '#00599C'
+    default: "#00599C"
   },
   isActive: {
     type: Boolean,
@@ -44,9 +44,9 @@ const languageSchema = new mongoose.Schema({
   }
 });
 
-languageSchema.pre('save', function(next) {
+languageSchema.pre("save", function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-export default mongoose.model('Language', languageSchema);
+export default mongoose.model("Language", languageSchema);

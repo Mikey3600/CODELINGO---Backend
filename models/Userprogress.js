@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userProgressSchema = new mongoose.Schema({
   userId: {
@@ -15,7 +15,7 @@ const userProgressSchema = new mongoose.Schema({
   },
   lessonId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Lesson',
+    ref: "Lesson",
     required: true,
     index: true
   },
@@ -25,8 +25,7 @@ const userProgressSchema = new mongoose.Schema({
   },
   totalQuestions: {
     type: Number,
-    required: true,
-    min: 1
+    required: true
   },
   correctAnswers: {
     type: Number,
@@ -51,27 +50,33 @@ const userProgressSchema = new mongoose.Schema({
   completedAt: {
     type: Date,
     default: null
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
-}, { timestamps: true });
+});
 
-userProgressSchema.index(
-  { userId: 1, languageCode: 1, lessonId: 1 },
-  { unique: true }
-);
+userProgressSchema.index({ userId: 1, languageCode: 1, lessonId: 1 }, { unique: true });
 
-userProgressSchema.pre('save', function (next) {
-  if (this.completedQuestions >= this.totalQuestions) {
+userProgressSchema.pre("save", function(next) {
+  this.updatedAt = Date.now();
+  if (this.completedQuestions === this.totalQuestions) {
     this.isCompleted = true;
-    this.completedAt ??= Date.now();
+    if (!this.completedAt) {
+      this.completedAt = Date.now();
+    }
   }
-
-  this.score = Math.round(
-    (this.correctAnswers / this.totalQuestions) * 100
-  );
-
+  if (this.totalQuestions > 0) {
+    this.score = Math.round((this.correctAnswers / this.totalQuestions) * 100);
+  }
   next();
 });
 
-export default mongoose.model('UserProgress', userProgressSchema);
+export default mongoose.model("UserProgress", userProgressSchema);
 
 

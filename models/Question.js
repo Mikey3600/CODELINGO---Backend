@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const questionSchema = new mongoose.Schema({
   lessonId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Lesson',
+    ref: "Lesson",
     required: true,
     index: true
   },
@@ -38,8 +38,8 @@ const questionSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ['easy', 'medium', 'hard'],
-    default: 'medium'
+    enum: ["easy", "medium", "hard"],
+    default: "medium"
   },
   order: {
     type: Number,
@@ -61,12 +61,12 @@ const questionSchema = new mongoose.Schema({
 
 questionSchema.index({ lessonId: 1, order: 1 });
 
-questionSchema.pre('save', function (next) {
+questionSchema.pre("save", function(next) {
   if (this.options.length !== 4) {
-    return next(new Error('Question must have exactly 4 options'));
+    return next(new Error("Question must have exactly 4 options"));
   }
   this.updatedAt = Date.now();
   next();
 });
 
-export default mongoose.model('Question', questionSchema);
+export default mongoose.model("Question", questionSchema);

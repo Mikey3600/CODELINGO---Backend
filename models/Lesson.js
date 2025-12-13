@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const lessonSchema = new mongoose.Schema({
   languageCode: {
@@ -23,12 +23,12 @@ const lessonSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ['beginner', 'intermediate', 'advanced'],
+    enum: ["beginner", "intermediate", "advanced"],
     required: true
   },
   icon: {
     type: String,
-    default: 'book'
+    default: "book"
   },
   estimatedTime: {
     type: Number,
@@ -54,9 +54,9 @@ const lessonSchema = new mongoose.Schema({
 
 lessonSchema.index({ languageCode: 1, order: 1 });
 
-lessonSchema.pre('save', function (next) {
+lessonSchema.pre("save", function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-export default mongoose.model('Lesson', lessonSchema);
+export default mongoose.model("Lesson", lessonSchema);
